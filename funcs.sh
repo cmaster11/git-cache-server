@@ -43,20 +43,20 @@ mainSync() {
 
   SUCCESS=false
 
-  if [[ -n "$GIT_SIBLING_URL" ]]; then
-    syncGit "$GIT_SIBLING_URL" && {
-      SUCCESS=true
-    } || {
-      echo "Failed to update from sibling"
-    }
-  fi
-
-  if [[ "$SUCCESS" == "false" ]]; then
-    syncGit "$GIT_MASTER_URL" && {
+  syncGit "$GIT_MASTER_URL" && {
       SUCCESS=true
     } || {
       echo "Failed to update from master"
     }
+
+  if [[ "$SUCCESS" == "false" ]]; then
+    if [[ -n "$GIT_SIBLING_URL" ]]; then
+      syncGit "$GIT_SIBLING_URL" && {
+        SUCCESS=true
+      } || {
+        echo "Failed to update from sibling"
+      }
+    fi
   fi
 
   if [[ "$SUCCESS" == "false" ]]; then
