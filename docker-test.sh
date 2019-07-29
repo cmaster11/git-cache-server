@@ -9,4 +9,8 @@ IMAGE_NAME="git-cache-server"
 VERSION=$(git describe --tags 2>/dev/null || echo 'master')
 
 docker build -t "$IMAGE_NAME:$VERSION" "$DIR"
-docker run --rm -it -p 8099:80 --env GIT_MASTER_URL="https://github.com/cmaster11/alpine-util" "$IMAGE_NAME:$VERSION"
+
+docker run --rm -it -p 8099:80 \
+  --env GIT_REPO_NAME="cmaster11/alpine-util" \
+  --env GIT_MASTER_HOST="github.com" \
+  "$IMAGE_NAME:$VERSION"
