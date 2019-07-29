@@ -40,7 +40,8 @@ if [[ -n "$GIT_FALLBACK_USERNAME" ]]; then
 fi
 
 # Generated
-GIT_FALLBACK_URL="${GIT_FALLBACK_PROTOCOL}://${GIT_FALLBACK_LOGIN}${GIT_FALLBACK_HOST}/${GIT_REPO_NAME}.git"
+GIT_REPO_NAME_SPLIT_LAST="${GIT_REPO_NAME##*/}"
+GIT_FALLBACK_URL="${GIT_FALLBACK_PROTOCOL}://${GIT_FALLBACK_LOGIN}${GIT_FALLBACK_HOST}/${GIT_REPO_NAME_SPLIT_LAST}.git"
 
 # Storage for repos
 DIR_DATA="/usr/local/apache2/htdocs/"
@@ -69,7 +70,7 @@ syncGit() {
   return 0
 }
 
-# Performs a sync with master/FALLBACK repo, depending on availability
+# Performs a sync with MASTER/FALLBACK repo, depending on availability
 mainSync() {
 
   SUCCESS=false
@@ -77,7 +78,7 @@ mainSync() {
   syncGit "$GIT_MASTER_URL" && {
       SUCCESS=true
     } || {
-      echo "Failed to update from master"
+      echo "Failed to update from MASTER"
     }
 
   if [[ "$SUCCESS" == "false" ]]; then
