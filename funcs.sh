@@ -4,12 +4,43 @@ DIR="$(dirname "$(command -v greadlink >/dev/null 2>&1 && greadlink -f "$0" || r
 
 # --- ENV VARS
 
+GIT_REPO_NAME="$GIT_REPO_NAME"
+
+GIT_MASTER_HOST="$GIT_MASTER_HOST"
+GIT_MASTER_USERNAME="${GIT_MASTER_USERNAME:-}"
+GIT_MASTER_PASSWORD="${GIT_MASTER_PASSWORD:-}"
+GIT_MASTER_PROTOCOL="${GIT_MASTER_PROTOCOL:-https}"
+
+GIT_MASTER_LOGIN=
+if [[ -n "$GIT_MASTER_USERNAME" ]]; then
+  GIT_MASTER_LOGIN="$GIT_MASTER_USERNAME@"
+
+  if [[ -n "$GIT_MASTER_PASSWORD" ]]; then
+    GIT_MASTER_LOGIN="$GIT_MASTER_USERNAME:$GIT_MASTER_PASSWORD@"
+  fi
+fi
+
 # The source of truth
-GIT_MASTER_URL="${GIT_MASTER_URL}"
+GIT_MASTER_URL="${GIT_MASTER_PROTOCOL}://${GIT_MASTER_LOGIN}${GIT_MASTER_HOST}/${GIT_REPO_NAME}.git"
 
 # Any other cache servers (e.g. k8s service)
-# Empty to only use master url
-GIT_SIBLING_URL="${GIT_SIBLING_URL:-}"
+# Empty to only use FALLBACK url
+GIT_FALLBACK_HOST="${GIT_FALLBACK_HOST:-}"
+GIT_FALLBACK_USERNAME="${GIT_FALLBACK_USERNAME:-}"
+GIT_FALLBACK_PASSWORD="${GIT_FALLBACK_PASSWORD:-}"
+GIT_FALLBACK_PROTOCOL="${GIT_FALLBACK_PROTOCOL:-https}"
+
+GIT_FALLBACK_LOGIN=
+if [[ -n "$GIT_FALLBACK_USERNAME" ]]; then
+  GIT_FALLBACK_LOGIN="$GIT_FALLBACK_USERNAME@"
+
+  if [[ -n "$GIT_FALLBACK_PASSWORD" ]]; then
+    GIT_FALLBACK_LOGIN="$GIT_FALLBACK_USERNAME:$GIT_FALLBACK_PASSWORD@"
+  fi
+fi
+
+# Generated
+GIT_FALLBACK_URL="${GIT_FALLBACK_PROTOCOL}://${GIT_FALLBACK_LOGIN}${GIT_FALLBACK_HOST}/${GIT_REPO_NAME}.git"
 
 # Storage for repos
 DIR_DATA="/usr/local/apache2/htdocs/"
@@ -38,7 +69,7 @@ syncGit() {
   return 0
 }
 
-# Performs a sync with master/sibling repo, depending on availability
+# Performs a sync with master/FALLBACK repo, depending on availability
 mainSync() {
 
   SUCCESS=false
@@ -50,11 +81,11 @@ mainSync() {
     }
 
   if [[ "$SUCCESS" == "false" ]]; then
-    if [[ -n "$GIT_SIBLING_URL" ]]; then
-      syncGit "$GIT_SIBLING_URL" && {
+    if [[ -n "$GIT_FALLBACK_HOST" ]]; then
+      syncGit "${GIT_FALLBACK_URL}" && {
         SUCCESS=true
       } || {
-        echo "Failed to update from sibling"
+        echo "Failed to update from FALLBACK"
       }
     fi
   fi
