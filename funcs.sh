@@ -5,6 +5,7 @@ DIR="$(dirname "$(command -v greadlink >/dev/null 2>&1 && greadlink -f "$0" || r
 # --- ENV VARS
 
 GIT_REPO_NAME="$GIT_REPO_NAME"
+GIT_CLONED_REPO_NAME="${GIT_CLONED_REPO_NAME:-}"
 
 GIT_MASTER_HOST="$GIT_MASTER_HOST"
 GIT_MASTER_USERNAME="${GIT_MASTER_USERNAME:-}"
@@ -65,7 +66,11 @@ syncGit() {
   # Overwrite local cache
   rm -rf "$DIR_DATA/*"
 
-  mv "$TMP_DIR"/* "$DIR_DATA"
+  if [[ -n "$GIT_CLONED_REPO_NAME" ]]; then
+    mv "$TMP_DIR"/* "$DIR_DATA/$GIT_CLONED_REPO_NAME"
+  else
+    mv "$TMP_DIR"/* "$DIR_DATA"
+  fi
 
   return 0
 }
